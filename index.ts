@@ -12,7 +12,10 @@ import { IConvertOptions } from './src/types/covnert_options.interface';
 const csvStringifyAsync = promisify<csvStringify.Input, csvStringify.Options, string>(csvStringify);
 const writeFileAsync = promisify(fs.writeFile);
 
-export async function convert(excelPath: string, partialOptions: Partial<IConvertOptions> = {}): Promise<string | boolean> {
+export async function convert(
+    excelPath: string,
+    partialOptions: Partial<IConvertOptions> = {},
+): Promise<string | boolean> {
     try {
         const options: IConvertOptions = formOptions(excelPath, partialOptions);
         const items: any[] = await excelToJson(excelPath);
@@ -54,7 +57,7 @@ async function excelToJson(excelPath: string): Promise<any[]> {
 }
 
 function main(): void {
-    if (process.argv.length < 2) {
+    if (require.main !== module) { // required as module
         return;
     }
 
@@ -62,7 +65,7 @@ function main(): void {
         .version('0.1.0', '-v, --version')
         .arguments('<excel_file>')
         .option('-o, --output <csv_file>', 'Output CSV file path')
-        .action(function (excelFile?: string) {
+        .action((excelFile?: string) => {
             if (excelFile) {
                 convert(excelFile, {
                     csvPath: commander.output,
