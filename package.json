@@ -1,8 +1,11 @@
 {
   "name": "excel2csv",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "Convert Excel files to CSV",
   "main": "dist/index.js",
+  "bin": {
+    "excel2csv": "./dist/index.js"
+  },
   "scripts": {
     "build": "tsc",
     "clean": "rm -rf dist/",
@@ -30,14 +33,14 @@
   "homepage": "https://github.com/behroozk/excel2csv#readme",
   "devDependencies": {
     "@types/csv-stringify": "^1.4.2",
-    "@types/node": "^10.7.1",
+    "@types/node": "^10.9.2",
     "tslint": "^5.11.0",
     "typescript": "^3.0.1"
   },
   "dependencies": {
     "commander": "^2.17.1",
     "csv-stringify": "^3.1.1",
-    "xlsx": "^0.13.4"
+    "xlsx": "^0.13.5"
   },
   "typings": "dist/index.d.ts"
 }
