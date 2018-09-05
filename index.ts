@@ -79,3 +79,5 @@ function main(): void {
 }
 
 main();
+
+export { IConvertOptions };
