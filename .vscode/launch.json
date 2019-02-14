@@ -15,7 +15,8 @@
             ],
             "preLaunchTask": "build",
             "args": [
-                "-o rexel_1400.csv",
+                "-o",
+                "rexel_1400.csv",
                 "rexel_1400.xlsx"
             ],
             "envFile": "${workspaceRoot}/.env"

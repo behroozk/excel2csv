@@ -1,15 +1,14 @@
 #!/usr/bin/env node
 
 import commander from 'commander';
-import csvStringify from 'csv-stringify';
 import fs from 'fs';
 import path from 'path';
 import { promisify } from 'util';
 import xlsx from 'xlsx';
 
 import { IConvertOptions } from './src/types/covnert_options.interface';
+import { IExcelParserOptions } from './src/types/excel_parser_options.interface';
 
-const csvStringifyAsync = promisify<csvStringify.Input, csvStringify.Options, string>(csvStringify);
 const writeFileAsync = promisify(fs.writeFile);
 
 export async function convert(
@@ -18,9 +17,11 @@ export async function convert(
 ): Promise<string | boolean> {
     try {
         const options: IConvertOptions = formOptions(excelPath, partialOptions);
-        const items: any[] = await excelToJson(excelPath);
 
-        const csv = await csvStringifyAsync(items, { header: true });
+        const csv = excelToJson(excelPath, {
+                sheetIndex: options.sheetIndex,
+                sheetName: options.sheetName,
+            });
 
         if (options.writeCsv) {
             await writeFileAsync(options.csvPath, csv);
@@ -46,14 +47,22 @@ function formOptions(excelPath: string, partialOptions: Partial<IConvertOptions>
     return options;
 }
 
-async function excelToJson(excelPath: string): Promise<any[]> {
+function excelToJson(excelPath: string, options: Partial<IExcelParserOptions> = {}): string {
     const workbook: xlsx.WorkBook = xlsx.readFile(excelPath);
-    const sheetName: string = workbook.SheetNames[0];
+    const sheetName: string = getExcelSheetName(workbook.SheetNames, options);
     const sheet: xlsx.WorkSheet = workbook.Sheets[sheetName];
 
-    const items = xlsx.utils.sheet_to_json(sheet);
+    return xlsx.utils.sheet_to_csv(sheet);
+}
 
-    return items;
+function getExcelSheetName(sheetNames: string[], options: Partial<IExcelParserOptions>): string {
+    if (options.sheetIndex && options.sheetIndex < sheetNames.length) {
+        return sheetNames[options.sheetIndex];
+    } else if (options.sheetName && sheetNames.indexOf(options.sheetName) > -1) {
+        return options.sheetName;
+    } else {
+        return sheetNames[0];
+    }
 }
 
 function main(): void {
@@ -64,13 +73,23 @@ function main(): void {
     commander
         .version('0.1.0', '-v, --version')
         .arguments('<excel_file>')
-        .option('-o, --output <csv_file>', 'Output CSV file path')
+        .option('-n, --sheet-index <sheet_name>', 'Sheet index to convert (defaults to 0)')
+        .option('-s, --sheet-name <sheet_name>', 'Sheet name to convert')
+        .option('-o, --output <csv_file>', 'Output CSV file path (defaults to input file name)')
         .action((excelFile?: string) => {
             if (excelFile) {
-                convert(excelFile, {
-                    csvPath: commander.output,
-                    writeCsv: true,
-                });
+                const options: Partial<IConvertOptions> = { writeCsv: true };
+                if (commander.output) {
+                    options.csvPath = commander.output;
+                }
+
+                if (Number(commander.sheetIndex)) {
+                    options.sheetIndex = Number(commander.sheetIndex);
+                } else if (commander.sheetName) {
+                    options.sheetName = commander.sheetName;
+                }
+
+                convert(excelFile, options);
             }
         })
         .parse(process.argv);
