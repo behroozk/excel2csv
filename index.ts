@@ -18,7 +18,7 @@ export async function convert(
     try {
         const options: IConvertOptions = formOptions(excelPath, partialOptions);
 
-        const csv = excelToJson(excelPath, {
+        const csv = excelToCsv(excelPath, {
                 sheetIndex: options.sheetIndex,
                 sheetName: options.sheetName,
             });
@@ -47,7 +47,7 @@ function formOptions(excelPath: string, partialOptions: Partial<IConvertOptions>
     return options;
 }
 
-function excelToJson(excelPath: string, options: Partial<IExcelParserOptions> = {}): string {
+function excelToCsv(excelPath: string, options: Partial<IExcelParserOptions> = {}): string {
     const workbook: xlsx.WorkBook = xlsx.readFile(excelPath);
     const sheetName: string = getExcelSheetName(workbook.SheetNames, options);
     const sheet: xlsx.WorkSheet = workbook.Sheets[sheetName];
